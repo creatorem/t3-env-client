@@ -2,9 +2,15 @@ import { createServer } from "node:http";
 import { parse } from "node:url";
 import next from "next";
 import { consola } from "consola";
+import chalk from "chalk";
 import path from "node:path";
 import fs from "node:fs";
 import { fileURLToPath } from "node:url";
+import { getEnvConfigData } from "../lib/env-data.js";
+import { getEnvVariablesData } from "../lib/env-variables.js";
+
+// Global variable to store the project directory for Next.js pages
+global.__PROJECT_DIR__ = "";
 
 interface StartServerOptions {
   relativePathDir: string;
@@ -15,6 +21,13 @@ interface StartServerOptions {
 export async function startServer({ relativePathDir, port, verbose }: StartServerOptions) {
   const dev = process.env.NODE_ENV !== "production";
   const hostname = "localhost";
+
+  consola.log(chalk.greenBright(`\n  T3-env-client 1.0.0`));
+  consola.log(`  Started at:    http://${hostname}:${port}\n`);
+  consola.info(`📁 Scanning directory: ${path.resolve(relativePathDir)}`);
+  
+  // Store the project directory globally for Next.js pages to access
+  global.__PROJECT_DIR__ = path.resolve(relativePathDir);
   
   // Get current file directory in ESM
   const currentFileUrl = import.meta.url;
@@ -46,9 +59,24 @@ export async function startServer({ relativePathDir, port, verbose }: StartServe
         const parsedUrl = parse(req.url!, true);
         
         if (parsedUrl.pathname === "/api/env") {
-          const envData = await getEnvironmentData(relativePathDir);
+          // Get both config and variables data
+          const envConfigData = await getEnvConfigData(relativePathDir);
+          const envVariablesData = await getEnvVariablesData(relativePathDir);
+          
+          // Combine for backward compatibility (if needed by any external consumers)
+          const combinedData = {
+            envConfigData,
+            envVariablesData,
+            // Legacy format for backward compatibility
+            projectPath: envConfigData.projectPath,
+            envClientConfig: envConfigData.envClientConfig,
+            files: envVariablesData.files,
+            variables: envVariablesData.variables,
+            processEnv: envVariablesData.processEnv
+          };
+          
           res.writeHead(200, { "Content-Type": "application/json" });
-          res.end(JSON.stringify(envData));
+          res.end(JSON.stringify(combinedData));
           return;
         }
         
@@ -66,9 +94,6 @@ export async function startServer({ relativePathDir, port, verbose }: StartServe
         else resolve();
       });
     });
-
-    consola.success(`🚀 Server ready at http://${hostname}:${port}`);
-    consola.info(`📁 Scanning directory: ${path.resolve(relativePathDir)}`);
     
     return server;
   } catch (error) {
@@ -77,75 +102,3 @@ export async function startServer({ relativePathDir, port, verbose }: StartServe
   }
 }
 
-async function getEnvironmentData(projectDir: string) {
-  const envFiles = [
-    ".env",
-    ".env.local", 
-    ".env.development",
-    ".env.production"
-  ];
-  
-  const envData: Record<string, any> = {
-    projectPath: path.resolve(projectDir),
-    files: {},
-    variables: {}
-  };
-
-  for (const file of envFiles) {
-    const filePath = path.join(projectDir, file);
-    
-    if (fs.existsSync(filePath)) {
-      try {
-        const content = fs.readFileSync(filePath, "utf-8");
-        const variables = parseEnvFile(content);
-        
-        envData.files[file] = {
-          exists: true,
-          path: filePath,
-          variables: Object.keys(variables),
-          content: content
-        };
-        
-        Object.assign(envData.variables, variables);
-      } catch (error) {
-        envData.files[file] = {
-          exists: true,
-          path: filePath,
-          error: `Failed to read: ${error}`
-        };
-      }
-    } else {
-      envData.files[file] = {
-        exists: false,
-        path: filePath
-      };
-    }
-  }
-
-  envData.processEnv = Object.fromEntries(
-    Object.entries(process.env).filter(([key]) => 
-      !key.startsWith('_') && 
-      !['PATH', 'HOME', 'USER', 'SHELL'].includes(key)
-    )
-  );
-
-  return envData;
-}
-
-function parseEnvFile(content: string): Record<string, string> {
-  const variables: Record<string, string> = {};
-  const lines = content.split('\n');
-  
-  for (const line of lines) {
-    const trimmedLine = line.trim();
-    if (trimmedLine && !trimmedLine.startsWith('#')) {
-      const [key, ...valueParts] = trimmedLine.split('=');
-      if (key && valueParts.length > 0) {
-        const value = valueParts.join('=').replace(/^["']|["']$/g, '');
-        variables[key.trim()] = value;
-      }
-    }
-  }
-  
-  return variables;
-}

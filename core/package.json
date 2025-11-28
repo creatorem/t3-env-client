@@ -22,7 +22,7 @@
   "scripts": {
     "build": "NEXT_BUILD_FLAGS=\"--webpack\" next build && tsup",
     "build:cli": "tsup",
-    "dev": "pnpm build:cli && cd ../example && node ../core/dist/cli/index.js --verbose",
+    "dev": "pnpm build:cli && cd ../example && node ../core/dist/cli/index.js --port 3019 --verbose",
     "dev:help": "cd ../example && node ../core/dist/cli/index.js --help",
     "clean": "git clean -xdf node_modules dist .next",
     "format": "turbo format --cache-dir=.turbo --continue -- --cache --cache-location='node_modules/.cache/.prettiercache' --ignore-path='../../.gitignore'",
@@ -49,6 +49,7 @@
     "zod": "^4.1.13"
   },
   "devDependencies": {
+    "@t3-oss/env-core": "^0.13.8",
     "@tailwindcss/postcss": "^4.1.17",
     "@types/mime-types": "^3.0.1",
     "@types/node": "^24.10.1",

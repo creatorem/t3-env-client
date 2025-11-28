@@ -1,9 +1,6 @@
 import { createEnv } from '@t3-oss/env-nextjs';
 import { z } from 'zod';
 
-// export const envs = () =>
-//     createEnv({
-
 export const envs = createEnv({
         client: {
             NEXT_PUBLIC_CAPTCHA_SITE_KEY: z.string().optional(),
@@ -26,6 +23,6 @@ export const envs = createEnv({
             GITHUB_APP_PRIVATE_KEY: z.string().min(1),
             GITHUB_MODIFIED_TIME_TOKEN: z.string().min(1),
         },
-        runtimeEnv: process.env,
+        runtimeEnv: process.env as any,
         emptyStringAsUndefined: true,
     });
