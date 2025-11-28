@@ -1,0 +1,71 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+*.ignore
+
+.direnv
+.envrc
+
+# dependencies
+node_modules
+.pnp
+.pnp.js
+
+# generated content
+.contentlayer
+.content-collections
+.source
+
+# testing
+coverage
+
+# next.js
+.next/
+out/
+
+# production
+build
+dist
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+
+# turbo
+.turbo
+
+# ide
+.idea/
+.vscode/
+.zed
+
+# contentlayer
+.contentlayer/
+*storybook.log
+storybook-static
+
+# mobile
+android
+ios
+
+# large image files
+apps/marketing/public/images/screenshots/*.png
+
+.taskmaster
+
+untranslated-text-report.json
+
+# Ignore compiled JS from TS scripts
+tooling/scripts/src/**/*.js
+!tooling/scripts/src/**/*.mjs

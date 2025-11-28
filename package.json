@@ -1,0 +1,28 @@
+{
+  "name": "t3-env-client/sandbox",
+  "version": "1.0.0",
+  "engines": {
+    "node": ">=v21"
+  },
+  "author": {
+    "url": "https://creatorem.com",
+    "name": "Arnaud Pfundstein"
+  },
+  "scripts": {
+    "build": "turbo build --cache-dir=.turbo",
+    "clean": "git clean -xdf node_modules dist .next",
+    "dev": "cross-env FORCE_COLOR=1 turbo dev --parallel",
+    "format": "turbo format --cache-dir=.turbo --continue -- --cache --cache-location='node_modules/.cache/.prettiercache' --ignore-path='../../.gitignore'",
+    "format:fix": "turbo format --cache-dir=.turbo --continue -- --write --cache --cache-location='node_modules/.cache/.prettiercache' --ignore-path='../../.gitignore'",
+    "lint": "turbo lint --cache-dir=.turbo --affected --continue -- --cache --cache-location 'node_modules/.cache/.eslintcache' && manypkg check",
+    "lint:fix": "turbo lint --cache-dir=.turbo --affected --continue -- --fix --cache --cache-location 'node_modules/.cache/.eslintcache' && manypkg fix",
+    "typecheck": "turbo typecheck --affected --cache-dir=.turbo",
+    "test": "turbo test --cache-dir=.turbo"
+  },
+  "prettier": "@kit/prettier-config",
+  "packageManager": "pnpm@9.12.0",
+  "dependencies": {
+    "turbo": "^2.6.1",
+    "typescript": "^5.9.3"
+  }
+}

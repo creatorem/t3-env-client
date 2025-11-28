@@ -1,0 +1,50 @@
+{
+  "name": "t3-env-client",
+  "version": "1.0.0",
+  "engines": {
+    "node": ">=v21"
+  },
+  "author": {
+    "url": "https://creatorem.com",
+    "name": "Arnaud Pfundstein"
+  },
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "package.json",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "turbo build --cache-dir=.turbo",
+    "clean": "git clean -xdf node_modules dist .next",
+    "dev": "cross-env FORCE_COLOR=1 turbo dev --parallel",
+    "format": "turbo format --cache-dir=.turbo --continue -- --cache --cache-location='node_modules/.cache/.prettiercache' --ignore-path='../../.gitignore'",
+    "format:fix": "turbo format --cache-dir=.turbo --continue -- --write --cache --cache-location='node_modules/.cache/.prettiercache' --ignore-path='../../.gitignore'",
+    "lint": "turbo lint --cache-dir=.turbo --affected --continue -- --cache --cache-location 'node_modules/.cache/.eslintcache' && manypkg check",
+    "lint:fix": "turbo lint --cache-dir=.turbo --affected --continue -- --fix --cache --cache-location 'node_modules/.cache/.eslintcache' && manypkg fix",
+    "typecheck": "turbo typecheck --affected --cache-dir=.turbo",
+    "test": "turbo test --cache-dir=.turbo"
+  },
+  "prettier": "@kit/prettier-config",
+  "packageManager": "pnpm@9.12.0",
+  "dependencies": {
+    "@t3-oss/env-nextjs": "0.13.8",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "lucide-react": "^0.544.0",
+    "next": "16.0.3",
+    "esbuild": "^0.27.0",
+    "zod": "^4.1.13"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.4",
+    "@types/react-dom": "^19.2.3",
+    "tailwindcss": "^4.1.13",
+    "typescript": "^5.9.3"
+  }
+}
