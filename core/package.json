@@ -12,6 +12,8 @@
   "type": "module",
   "files": [
     "dist",
+    ".next",
+    "next.config.ts",
     "LICENSE",
     "package.json",
     "README.md"
@@ -20,9 +22,10 @@
     "t3-env-client": "./dist/cli/index.js"
   },
   "scripts": {
-    "build": "NEXT_BUILD_FLAGS=\"--webpack\" next build && tsup",
+    "build": "pnpm build:nextjs && pnpm build:cli",
     "build:cli": "tsup",
-    "dev": "pnpm build:cli && cd ../example && node ../core/dist/cli/index.js --port 3019 --verbose",
+    "build:nextjs": "next build",
+    "dev": "pnpm build:cli && cd ../example && node ../core/dist/cli/index.js --verbose",
     "dev:help": "cd ../example && node ../core/dist/cli/index.js --help",
     "clean": "git clean -xdf node_modules dist .next",
     "format": "prettier --check \"src/**/*.{js,jsx,ts,tsx,json,css,md}\"",

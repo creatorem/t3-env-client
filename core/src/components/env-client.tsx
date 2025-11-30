@@ -193,12 +193,11 @@ const EnvironmentSelectorSection = () => {
   );
 };
 
-// Main content layout
-const EnvClientContent = ({ variables }: { variables: VariablesType }) => {
+export const Client = ({ variables }: EnvClientProps) => {
   const { query, status } = useFilters();
   const { variables: envVariables } = useEnvironment();
   const currentVariables = getCurrentVariables(envVariables, variables);
-
+  
   return (
     <VariablesProvider
       variables={currentVariables}
@@ -208,20 +207,12 @@ const EnvClientContent = ({ variables }: { variables: VariablesType }) => {
       <div className="mx-auto max-w-7xl space-y-6">
         <EnvironmentSelectorSection />
         <Filters />
-
+  
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           <Variables />
           <CodePreview />
         </div>
       </div>
     </VariablesProvider>
-  );
-};
-
-export const EnvClient = ({ variables }: EnvClientProps) => {
-  return (
-    <FiltersProvider>
-      <EnvClientContent variables={variables} />
-    </FiltersProvider>
   );
 };

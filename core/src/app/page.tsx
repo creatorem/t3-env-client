@@ -1,4 +1,5 @@
-import { EnvClient } from "../components/env-client";
+import { FiltersProvider } from "@/components/filters/context";
+import { Client } from "../components/env-client";
 import { EnvironmentProvider } from "../components/environment/context";
 import type { Environment } from "../lib/actions";
 import { getEnvConfigData } from "../lib/env-data";
@@ -76,7 +77,6 @@ async function getServerSideData(): Promise<Variables> {
         }
       });
     }
-    console.log( {envConfigData} )
 
     return variables;
   } catch (error) {
@@ -94,7 +94,9 @@ export default async function Home() {
       initialEnvironment={initialEnvironment}
       initialVariables={variables}
     >
-      <EnvClient variables={variables} />
+      <FiltersProvider>
+        <Client variables={variables} />
+      </FiltersProvider>
     </EnvironmentProvider>
   );
 }

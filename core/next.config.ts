@@ -5,6 +5,9 @@ const config: NextConfig = {
     ignoreBuildErrors: true,
   },
   serverExternalPackages: ['esbuild'],
+  turbopack: {
+    // Empty turbopack config to silence the warning
+  },
   webpack: (config, { isServer }) => {
     if (isServer) {
       // Handle esbuild as external for server builds
