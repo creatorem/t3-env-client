@@ -1,10 +1,9 @@
 #!/usr/bin/env node
-import { program } from "commander";
-import fs from "node:fs";
-import { consola } from "consola";
-
 import { version } from "../../package.json";
 import { startServer } from "../server/start";
+import { program } from "commander";
+import { consola } from "consola";
+import fs from "node:fs";
 
 interface CliArgs {
   dir: string;
@@ -36,29 +35,26 @@ const start = async ({ dir: relativePathDir, port, verbose }: CliArgs) => {
     if (verbose) {
       consola.success("Server successfully started.");
     }
-
   } catch (error) {
-    consola.error(new Error("An error has occured running start command."), error);
+    consola.error(
+      new Error("An error has occured running start command."),
+      error
+    );
     process.exit(1);
   }
 };
 
-
 program
-  .name('t3-env-client')
+  .name("t3-env-client")
   .description(
-    "A live preview client to set your environment variables and help you setup a devlopment project."
+    "A live preview client to set your environment variables and help you setup a development project."
   )
   .version(version);
 
 program
   // .command('start')
   .description("Starts the preview client.")
-  .option(
-    "-d, --dir <path>",
-    "Directory path to your t3 env file.",
-    "./",
-  )
+  .option("-d, --dir <path>", "Directory path to your t3 env file.", "./")
   .option("-p --port <port>", "Port to run server on", "3010")
   .option("-v, --verbose", "Enable verbose logging", false)
   .action(start);

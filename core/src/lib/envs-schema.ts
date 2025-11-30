@@ -1,10 +1,10 @@
 "use server";
 
+import type { EnvConfigData } from "./env-data";
+import { deduceEnvsPath } from "./envs-handler";
+import fs from "node:fs";
 import path from "node:path";
 import vm from "node:vm";
-import fs from "node:fs";
-import { deduceEnvsPath } from "./envs-handler";
-import type { EnvConfigData } from "./env-data";
 
 export interface EnvSchemaResult {
   success: boolean;
@@ -30,45 +30,47 @@ const mockCreateEnv = (options: any) => {
     _schema: {
       client: options.client || {},
       server: options.server || {},
-      shared: options.shared || {}
+      shared: options.shared || {},
     },
-    _options: options
+    _options: options,
   };
 };
 
 // Internal modules for VM context
 const internalModules = {
   "@t3-oss/env-nextjs": {
-    createEnv: mockCreateEnv
+    createEnv: mockCreateEnv,
   },
-  "zod": require("zod")
+  zod: require("zod"),
 } as const;
 
 // Validate that the code is running on server side
 function validateServerSide(): EnvSchemaResult | null {
-  if (typeof window !== 'undefined') {
+  if (typeof window !== "undefined") {
     return {
       success: false,
-      error: "Schema extraction is only available on the server side"
+      error: "Schema extraction is only available on the server side",
     };
   }
   return null;
 }
 
 // Resolve and validate the envs file path
-function resolveEnvsFilePath(envConfigData: EnvConfigData): EnvSchemaResult | string {
+function resolveEnvsFilePath(
+  envConfigData: EnvConfigData
+): EnvSchemaResult | string {
   const envsFilePath = deduceEnvsPath(envConfigData);
   if (!envsFilePath) {
     return {
       success: false,
-      error: "Could not determine envs file path from config data"
+      error: "Could not determine envs file path from config data",
     };
   }
 
   if (!fs.existsSync(envsFilePath)) {
     return {
       success: false,
-      error: `Envs file not found: ${envsFilePath}`
+      error: `Envs file not found: ${envsFilePath}`,
     };
   }
 
@@ -78,22 +80,23 @@ function resolveEnvsFilePath(envConfigData: EnvConfigData): EnvSchemaResult | st
 // Import esbuild dynamically to avoid bundling issues
 async function importEsbuild(): Promise<EnvSchemaResult | any> {
   try {
-    const esbuildModule = await import('esbuild');
+    const esbuildModule = await import("esbuild");
     return {
       build: esbuildModule.build,
-      OutputFile: esbuildModule.OutputFile,
-      BuildFailure: esbuildModule.BuildFailure
     };
   } catch (importError) {
     return {
       success: false,
-      error: `Failed to import esbuild: ${importError}`
+      error: `Failed to import esbuild: ${importError}`,
     };
   }
 }
 
 // Build TypeScript file using esbuild
-async function buildTypeScriptFile(envsFilePath: string, build: any): Promise<EnvSchemaResult | any[]> {
+async function buildTypeScriptFile(
+  envsFilePath: string,
+  build: any
+): Promise<EnvSchemaResult | any[]> {
   try {
     const buildData = await build({
       bundle: true,
@@ -107,15 +110,15 @@ async function buildTypeScriptFile(envsFilePath: string, build: any): Promise<En
       },
       outdir: "stdout",
       sourcemap: "external",
-      external: ["@t3-oss/env-nextjs", "zod"]
+      external: ["@t3-oss/env-nextjs", "zod"],
     });
-    
+
     return buildData.outputFiles;
   } catch (exception) {
     const buildFailure = exception as any;
     return {
       success: false,
-      error: `Build failure: ${buildFailure.message}`
+      error: `Build failure: ${buildFailure.message}`,
     };
   }
 }
@@ -153,7 +156,11 @@ function createVMContext(envsFilePath: string): any {
 }
 
 // Execute bundled code in VM and handle errors
-function executeInVM(builtCode: string, context: any, envsFilePath: string): EnvSchemaResult | any {
+function executeInVM(
+  builtCode: string,
+  context: any,
+  envsFilePath: string
+): EnvSchemaResult | any {
   try {
     vm.runInNewContext(builtCode, context, { filename: envsFilePath });
     return context.module.exports;
@@ -164,18 +171,18 @@ function executeInVM(builtCode: string, context: any, envsFilePath: string): Env
         success: false,
         zodError: {
           issues: exception.issues.map((issue: any) => ({
-            code: issue.code || 'unknown',
+            code: issue.code || "unknown",
             path: issue.path || [],
-            message: issue.message || 'Validation error'
-          }))
+            message: issue.message || "Validation error",
+          })),
         },
-        error: "Zod validation failed for environment variables"
+        error: "Zod validation failed for environment variables",
       };
     }
 
     return {
       success: false,
-      error: `Runtime error: ${exception.message}`
+      error: `Runtime error: ${exception.message}`,
     };
   }
 }
@@ -187,7 +194,7 @@ function extractSchema(moduleExports: any): EnvSchemaResult {
   if (!envs) {
     return {
       success: false,
-      error: "No envs export found in module"
+      error: "No envs export found in module",
     };
   }
 
@@ -196,7 +203,7 @@ function extractSchema(moduleExports: any): EnvSchemaResult {
     return {
       success: true,
       schema: envs._schema,
-      envs: envs
+      envs: envs,
     };
   }
 
@@ -204,11 +211,14 @@ function extractSchema(moduleExports: any): EnvSchemaResult {
   return {
     success: true,
     envs: envs,
-    error: "Schema structure not captured - envs object available but schema not extracted"
+    error:
+      "Schema structure not captured - envs object available but schema not extracted",
   };
 }
 
-export async function getEnvsSchema(envConfigData: EnvConfigData): Promise<EnvSchemaResult> {
+export async function getEnvsSchema(
+  envConfigData: EnvConfigData
+): Promise<EnvSchemaResult> {
   try {
     // 1. Validate server-side execution
     const serverSideError = validateServerSide();
@@ -216,7 +226,7 @@ export async function getEnvsSchema(envConfigData: EnvConfigData): Promise<EnvSc
 
     // 2. Resolve and validate envs file path
     const envsFilePathResult = resolveEnvsFilePath(envConfigData);
-    if (typeof envsFilePathResult !== 'string') return envsFilePathResult;
+    if (typeof envsFilePathResult !== "string") return envsFilePathResult;
     const envsFilePath = envsFilePathResult;
 
     // 3. Import esbuild dynamically
@@ -230,11 +240,11 @@ export async function getEnvsSchema(envConfigData: EnvConfigData): Promise<EnvSc
     const outputFiles = buildResult;
 
     // 5. Extract bundled JavaScript code
-    const bundledFile = outputFiles.find(file => file.path.endsWith('.js'));
+    const bundledFile = outputFiles.find((file) => file.path.endsWith(".js"));
     if (!bundledFile) {
       return {
         success: false,
-        error: "No JavaScript output file found"
+        error: "No JavaScript output file found",
       };
     }
     const builtCode = bundledFile.text;
@@ -247,11 +257,10 @@ export async function getEnvsSchema(envConfigData: EnvConfigData): Promise<EnvSc
 
     // 7. Extract schema from executed module
     return extractSchema(moduleExports);
-
   } catch (error: any) {
     return {
       success: false,
-      error: `Unexpected error: ${error.message}`
+      error: `Unexpected error: ${error.message}`,
     };
   }
 }

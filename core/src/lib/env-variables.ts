@@ -1,5 +1,5 @@
-import path from "node:path";
 import fs from "node:fs";
+import path from "node:path";
 
 export interface EnvFile {
   exists: boolean;
@@ -16,63 +16,68 @@ export interface EnvVariablesData {
   processEnv: Record<string, string>;
 }
 
-export async function getEnvVariables(projectDir: string): Promise<Record<string, string>> {
-  const envVariablesData = await getEnvVariablesData(projectDir);
+export async function getEnvVariables(
+  projectDir: string,
+  environment: "development" | "production" = "development"
+): Promise<Record<string, string>> {
+  const envVariablesData = await getEnvVariablesData(projectDir, environment);
   return envVariablesData.variables;
 }
 
-export async function getEnvVariablesData(projectDir: string): Promise<EnvVariablesData> {
-  const envFiles = [
-    ".env",
-    ".env.local", 
-    ".env.development",
-    ".env.production"
-  ];
-  
+export async function getEnvVariablesData(
+  projectDir: string,
+  environment: "development" | "production" = "development"
+): Promise<EnvVariablesData> {
+  // Environment-specific file loading order (higher priority first)
+  const envFiles =
+    environment === "production"
+      ? [".env.production.local", ".env.production", ".env.local", ".env"]
+      : [".env.development.local", ".env.development", ".env.local", ".env"];
+
   const envVariablesData: EnvVariablesData = {
     projectPath: path.resolve(projectDir),
     files: {},
     variables: {},
-    processEnv: {}
+    processEnv: {},
   };
 
   // Scan environment files
   for (const file of envFiles) {
     const filePath = path.join(projectDir, file);
-    
+
     if (fs.existsSync(filePath)) {
       try {
         const content = fs.readFileSync(filePath, "utf-8");
         const variables = parseEnvFile(content);
-        
+
         envVariablesData.files[file] = {
           exists: true,
           path: filePath,
           variables: Object.keys(variables),
-          content: content
+          content: content,
         };
-        
+
         Object.assign(envVariablesData.variables, variables);
       } catch (error) {
         envVariablesData.files[file] = {
           exists: true,
           path: filePath,
-          error: `Failed to read: ${error}`
+          error: `Failed to read: ${error}`,
         };
       }
     } else {
       envVariablesData.files[file] = {
         exists: false,
-        path: filePath
+        path: filePath,
       };
     }
   }
 
   // Get filtered process environment
   envVariablesData.processEnv = Object.fromEntries(
-    Object.entries(process.env).filter(([key]) => 
-      !key.startsWith('_') && 
-      !['PATH', 'HOME', 'USER', 'SHELL'].includes(key)
+    Object.entries(process.env).filter(
+      ([key]) =>
+        !key.startsWith("_") && !["PATH", "HOME", "USER", "SHELL"].includes(key)
     )
   );
 
@@ -81,18 +86,18 @@ export async function getEnvVariablesData(projectDir: string): Promise<EnvVariab
 
 function parseEnvFile(content: string): Record<string, string> {
   const variables: Record<string, string> = {};
-  const lines = content.split('\n');
-  
+  const lines = content.split("\n");
+
   for (const line of lines) {
     const trimmedLine = line.trim();
-    if (trimmedLine && !trimmedLine.startsWith('#')) {
-      const [key, ...valueParts] = trimmedLine.split('=');
+    if (trimmedLine && !trimmedLine.startsWith("#")) {
+      const [key, ...valueParts] = trimmedLine.split("=");
       if (key && valueParts.length > 0) {
-        const value = valueParts.join('=').replace(/^["']|["']$/g, '');
+        const value = valueParts.join("=").replace(/^["']|["']$/g, "");
         variables[key.trim()] = value;
       }
     }
   }
-  
+
   return variables;
 }

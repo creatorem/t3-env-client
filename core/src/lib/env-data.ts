@@ -1,6 +1,9 @@
-import path from "node:path";
+import type {
+  StandardSchemaDictionary,
+  StandardSchemaV1,
+} from "@t3-oss/env-core";
 import fs from "node:fs";
-import type { StandardSchemaV1, StandardSchemaDictionary } from "@t3-oss/env-core";
+import path from "node:path";
 
 export interface EnvFile {
   exists: boolean;
@@ -45,10 +48,12 @@ export interface EnvConfigData {
   envClientConfig: EnvClientConfig | null;
 }
 
-export async function getEnvConfigData(projectDir: string): Promise<EnvConfigData> {
+export async function getEnvConfigData(
+  projectDir: string
+): Promise<EnvConfigData> {
   const envConfigData: EnvConfigData = {
     projectPath: path.resolve(projectDir),
-    envClientConfig: null
+    envClientConfig: null,
   };
 
   // Try to read env-client.config.ts
@@ -60,9 +65,9 @@ export async function getEnvConfigData(projectDir: string): Promise<EnvConfigDat
         exists: true,
         path: configPath,
         content: configContent,
-        parsed: null
+        parsed: null,
       };
-      
+
       // Parse the config file as text to extract envsPath
       try {
         const tsContent = envConfigData.envClientConfig.content;
@@ -73,7 +78,8 @@ export async function getEnvConfigData(projectDir: string): Promise<EnvConfigDat
             envConfigData.envClientConfig.envsPath = envsPath;
             envConfigData.envClientConfig.parsed = { envsPath };
           } else {
-            envConfigData.envClientConfig.parseError = "Could not find envsPath in configuration";
+            envConfigData.envClientConfig.parseError =
+              "Could not find envsPath in configuration";
           }
         }
       } catch (parseError) {
@@ -83,14 +89,15 @@ export async function getEnvConfigData(projectDir: string): Promise<EnvConfigDat
       envConfigData.envClientConfig = {
         exists: true,
         path: configPath,
-        error: `Failed to read config: ${error}`
+        error: `Failed to read config: ${error}`,
       };
     }
   } else {
     envConfigData.envClientConfig = {
       exists: false,
       path: configPath,
-      suggestion: "Create env-client.config.ts to get detailed environment variable analysis"
+      suggestion:
+        "Create env-client.config.ts to get detailed environment variable analysis",
     };
   }
 
@@ -99,18 +106,18 @@ export async function getEnvConfigData(projectDir: string): Promise<EnvConfigDat
 
 function parseEnvFile(content: string): Record<string, string> {
   const variables: Record<string, string> = {};
-  const lines = content.split('\n');
-  
+  const lines = content.split("\n");
+
   for (const line of lines) {
     const trimmedLine = line.trim();
-    if (trimmedLine && !trimmedLine.startsWith('#')) {
-      const [key, ...valueParts] = trimmedLine.split('=');
+    if (trimmedLine && !trimmedLine.startsWith("#")) {
+      const [key, ...valueParts] = trimmedLine.split("=");
       if (key && valueParts.length > 0) {
-        const value = valueParts.join('=').replace(/^["']|["']$/g, '');
+        const value = valueParts.join("=").replace(/^["']|["']$/g, "");
         variables[key.trim()] = value;
       }
     }
   }
-  
+
   return variables;
 }

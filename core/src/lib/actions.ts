@@ -1,12 +1,16 @@
-import { EnvClient } from "../components/env-client";
-import { EnvironmentProvider } from "../components/environment/context";
-import type { Environment } from "../lib/actions";
-import { getEnvConfigData } from "../lib/env-data";
-import { getEnvVariables } from "../lib/env-variables";
-import { getEnvsSchema } from "../lib/envs-schema";
-import type { Variables } from "../lib/types";
+"use server";
 
-async function getServerSideData(): Promise<Variables> {
+import { revalidatePath } from "next/cache";
+import { getEnvConfigData } from "./env-data";
+import { getEnvVariablesData } from "./env-variables";
+import { getEnvsSchema } from "./envs-schema";
+import type { Variables } from "./types";
+
+export type Environment = "development" | "production";
+
+export async function reloadEnvironmentVariables(
+  environment: Environment = "development"
+): Promise<Variables> {
   try {
     // Get the project directory from global variable set by the server
     const projectDir = global.__PROJECT_DIR__;
@@ -15,8 +19,11 @@ async function getServerSideData(): Promise<Variables> {
     }
 
     const envConfigData = await getEnvConfigData(projectDir);
-    const envVariables = await getEnvVariables(projectDir);
+    const envVariablesData = await getEnvVariablesData(projectDir, environment);
     const envsSchemaResult = await getEnvsSchema(envConfigData);
+
+    // Use the environment-specific variables
+    const environmentVariables = envVariablesData.variables;
 
     const variables: Variables = {};
 
@@ -27,7 +34,7 @@ async function getServerSideData(): Promise<Variables> {
         Object.keys(envsSchemaResult.schema.client).forEach((key) => {
           variables[key] = {
             key,
-            value: envVariables?.[key] || "",
+            value: environmentVariables?.[key] || "",
             group: "client",
             description: "",
             required: true,
@@ -40,7 +47,7 @@ async function getServerSideData(): Promise<Variables> {
         Object.keys(envsSchemaResult.schema.server).forEach((key) => {
           variables[key] = {
             key,
-            value: envVariables?.[key] || "",
+            value: environmentVariables?.[key] || "",
             group: "server",
             description: "",
             required: true,
@@ -53,7 +60,7 @@ async function getServerSideData(): Promise<Variables> {
         Object.keys(envsSchemaResult.schema.shared).forEach((key) => {
           variables[key] = {
             key,
-            value: envVariables?.[key] || "",
+            value: environmentVariables?.[key] || "",
             group: "shared",
             description: "",
             required: true,
@@ -63,8 +70,8 @@ async function getServerSideData(): Promise<Variables> {
     }
 
     // Then, add any environment variables that aren't in the schema
-    if (envVariables) {
-      Object.entries(envVariables).forEach(([key, value]) => {
+    if (environmentVariables) {
+      Object.entries(environmentVariables).forEach(([key, value]) => {
         if (!variables[key]) {
           variables[key] = {
             key,
@@ -77,23 +84,18 @@ async function getServerSideData(): Promise<Variables> {
       });
     }
 
+    // Revalidate the path to refresh the page
+    revalidatePath("/");
+
     return variables;
   } catch (error) {
-    console.error("Failed to load environment data:", error);
-    return {};
+    console.error("Failed to reload environment data:", error);
+    throw error;
   }
 }
 
-export default async function Home() {
-  const variables = await getServerSideData();
-  const initialEnvironment: Environment = "development"; // Default to development
-
-  return (
-    <EnvironmentProvider
-      initialEnvironment={initialEnvironment}
-      initialVariables={variables}
-    >
-      <EnvClient variables={variables} />
-    </EnvironmentProvider>
-  );
+export async function getServerSideDataWithEnvironment(
+  environment: Environment = "development"
+): Promise<Variables> {
+  return reloadEnvironmentVariables(environment);
 }
