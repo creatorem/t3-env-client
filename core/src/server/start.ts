@@ -37,9 +37,22 @@ export async function startServer({
   const currentFileUrl = import.meta.url;
   const currentFileDir = path.dirname(fileURLToPath(currentFileUrl));
 
-  // In development, we're running from src/server/start.ts, so go up to project root
-  // In production, we're in dist/server/start.js, so also go up to project root
-  const nextJsAppDir = path.resolve(currentFileDir, "..", "..");
+  // Find the Next.js app directory - look for the directory containing src/app
+  let nextJsAppDir = currentFileDir;
+  
+  // Keep going up until we find a directory with src/app
+  while (nextJsAppDir !== path.dirname(nextJsAppDir)) {
+    const potentialAppDir = path.join(nextJsAppDir, "src", "app");
+    if (fs.existsSync(potentialAppDir)) {
+      break;
+    }
+    nextJsAppDir = path.dirname(nextJsAppDir);
+  }
+  
+  // If we still haven't found it, try going up from current directory
+  if (!fs.existsSync(path.join(nextJsAppDir, "src", "app"))) {
+    nextJsAppDir = path.resolve(currentFileDir, "..", "..");
+  }
 
   if (verbose) {
     consola.info(`Starting Next.js app from: ${nextJsAppDir}`);
