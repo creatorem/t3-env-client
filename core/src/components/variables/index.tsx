@@ -4,11 +4,13 @@ import { Form } from "./form";
 
 export const Variables = () => {
   return (
-    <div className="rounded-lg bg-white p-6 shadow-sm">
-      <h2 className="mb-6 text-xl font-semibold text-gray-900">
-        Environment Variables
+    <div className="py-4 relative">
+      <h2 className="absolute top-3 -translate-y-full text-md font-semibold text-foreground">
+        Variables
       </h2>
-      <Form />
+      <div className="rounded-lg border">
+        <Form />
+      </div>
     </div>
   );
 };

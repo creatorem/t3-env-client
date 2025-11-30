@@ -22,30 +22,19 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import type { EnvVariable, Issue } from "@/lib/types";
-import { AlertCircle, Check, Copy, Lock, ShieldOff } from "lucide-react";
+import {
+  AlertCircle,
+  Check,
+  Copy,
+  Lock,
+  ServerIcon,
+  ShieldOff,
+} from "lucide-react";
 import type {
   Control,
   ControllerRenderProps,
   FieldValues,
 } from "react-hook-form";
-
-const useCopyToClipboard = () => {
-  const [copied, setCopied] = useState(false);
-
-  const copy = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-      return true;
-    } catch (error) {
-      console.error("Failed to copy:", error);
-      return false;
-    }
-  };
-
-  return [copied, copy] as const;
-};
 
 // Group variables by common prefixes, excluding common suffixes
 const groupVariablesByPrefix = (keys: string[]) => {
@@ -112,7 +101,7 @@ export const Form = () => {
   return (
     <div className="h-full w-full">
       <Root {...form}>
-        <form className="space-y-6">
+        <form>
           {/* Ungrouped variables */}
           {ungrouped.map((key) => {
             const variable = variables[key];
@@ -131,12 +120,12 @@ export const Form = () => {
           {hasGroups && (
             <Accordion type="multiple" className="w-full">
               {Object.entries(groups).map(([prefix, keys]) => (
-                <AccordionItem key={prefix} value={prefix}>
-                  <AccordionTrigger className="capitalize">
+                <AccordionItem key={prefix} value={prefix} className="border-t border-b-0">
+                  <AccordionTrigger className="capitalize px-4">
                     {prefix.toLowerCase()} ({keys.length} variables)
                   </AccordionTrigger>
                   <AccordionContent>
-                    <div className="space-y-6">
+                    <div>
                       {keys.map((key) => {
                         const variable = variables[key];
                         if (!variable) return null;
@@ -191,15 +180,22 @@ const ValueInput = ({
   field: ControllerRenderProps<FieldValues, string>;
 }) => {
   return (
-    <div className="flex gap-2">
-      <FormControl>
-        <Input
-          placeholder={`Set a value for ${variable.key}`}
-          className="font-mono"
-          {...field}
-        />
-      </FormControl>
-      <CopyButton toCopy={field.value} />
+    <div className="flex flex-col">
+      <div className="flex items-center gap-2">
+        {variable.group === "server" && (
+          <Badge variant="secondary" className="size-9 gap-1">
+            <ServerIcon className="size-4" />
+          </Badge>
+        )}
+        <FormControl>
+          <Input
+            placeholder={`Set a value for ${variable.key}`}
+            className="font-mono"
+            {...field}
+          />
+        </FormControl>
+        <CopyButton toCopy={field.value} />
+      </div>
     </div>
   );
 };
@@ -220,13 +216,20 @@ const Variable = ({
       name={variable.key}
       render={({ field, fieldState }) => (
         <FormItem
-          className="border-b py-6 first:pt-1 last:border-b-0 last:pb-0"
+          // className="border-b px-4 py-6"
+          className="space-y-1 px-4 py-3"
           data-field-name={variable.key}
         >
           <div className="space-y-1">
-            <FormLabel className="font-mono font-semibold">
-              {variable.key}
-            </FormLabel>
+            <div className="flex justify-start gap-2">
+              <FormLabel className="font-mono font-semibold">
+                {variable.key}
+              </FormLabel>
+
+              <div className="text-muted-foreground text-xs">
+                {variable.group}
+              </div>
+            </div>
             {variable.description && (
               <FormDescription>{variable.description}</FormDescription>
             )}
@@ -235,9 +238,9 @@ const Variable = ({
 
           <FormMessage />
 
-          <div className="mt-2 flex gap-2">
+          {/* <div className="mt-2 flex gap-2">
             <AccessBadge group={variable.group} />
-          </div>
+          </div> */}
         </FormItem>
       )}
     />

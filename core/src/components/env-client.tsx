@@ -172,9 +172,14 @@ const CodePreview = () => {
   const envFileContent = generateEnvFileContent(form.getValues());
 
   return (
-    <div className="flex flex-col justify-start">
+    <div className="relative flex flex-col justify-start">
+
+      <h2 className="text-md text-foreground absolute top-3 -translate-y-full font-semibold">
+        File
+      </h2>
+
       <div className="sticky top-0 max-h-screen overflow-auto py-4">
-        <div className="bg-background overflow-hidden rounded-xl border">
+        <div className="bg-muted/20 overflow-hidden rounded-xl border">
           <CodeEditor
             code={envFileContent}
             onVariableClick={handleVariableClick}
@@ -206,21 +211,6 @@ const EnvironmentSelectorSection = () => {
   );
 };
 
-// Main content grid with form and code preview
-const MainContentGrid = () => {
-  return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-      {/* Left: Environment Variables Form */}
-      <div className="space-y-6">
-        <Variables />
-      </div>
-
-      {/* Right: Code Editor and Variable Stats */}
-      <CodePreview />
-    </div>
-  );
-};
-
 // Main content layout
 const EnvClientContent = ({ variables }: { variables: VariablesType }) => {
   const { query, status } = useFilters();
@@ -233,18 +223,19 @@ const EnvClientContent = ({ variables }: { variables: VariablesType }) => {
       searchQuery={query}
       statusFilter={status}
     >
-      <div className="min-h-screen bg-gray-50 p-8">
-        <div className="mx-auto max-w-7xl space-y-6">
-          <EnvironmentSelectorSection />
-          <Filters />
-          <MainContentGrid />
+      <div className="mx-auto max-w-7xl space-y-6">
+        <EnvironmentSelectorSection />
+        <Filters />
+
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <Variables />
+          <CodePreview />
         </div>
       </div>
     </VariablesProvider>
   );
 };
 
-// Main EnvClient component that wraps everything in providers
 export const EnvClient = ({ variables }: EnvClientProps) => {
   return (
     <FiltersProvider>

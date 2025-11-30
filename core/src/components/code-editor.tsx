@@ -345,7 +345,7 @@ export function CodeEditor({
       {/* Line Numbers */}
       <div
         className={cn(
-          "text-muted-foreground/40 dark:bg-surface z-10 bg-white py-2 pl-2 text-right select-none",
+          "text-muted-foreground/40 dark:bg-surface z-10 py-2 pl-2 text-right select-none",
           TEXT_SIZE_MAP[textSize].size
         )}
       >
@@ -384,33 +384,12 @@ export function CodeEditor({
   return (
     <div className={cn("p-1 pt-0", className)}>
       <div className="relative size-full">
-        {/* Copy Button - Top Left */}
-        {showCopyButton && (
-          <div className="absolute top-2 left-2 z-10">
-            <CopyButton
-              toCopy={code}
-              variant="outline"
-              size="icon-sm"
-              aria-label="Copy code to clipboard"
-              className="bg-background/80 border-border/50 hover:bg-background/90 backdrop-blur-sm"
-            />
-          </div>
-        )}
-
-        {/* Copy Button - Top Right */}
         {showCopyButton && (
           <div className="absolute top-2 right-2 z-10">
-            <CopyButton
-              toCopy={code}
-              variant="outline"
-              size="icon-sm"
-              aria-label="Copy code to clipboard"
-              className="bg-background/80 border-border/50 hover:bg-background/90 backdrop-blur-sm"
-            />
+            <CopyButton toCopy={code} />
           </div>
         )}
 
-        {/* Code Content */}
         {content}
       </div>
     </div>
