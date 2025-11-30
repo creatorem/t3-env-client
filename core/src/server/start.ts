@@ -8,6 +8,7 @@ import { createServer } from "node:http";
 import path from "node:path";
 import { parse } from "node:url";
 import { fileURLToPath } from "node:url";
+import { version } from "../../package.json";
 
 // Global variable to store the project directory for Next.js pages
 global.__PROJECT_DIR__ = "";
@@ -26,9 +27,9 @@ export async function startServer({
   const dev = process.env.NODE_ENV !== "production";
   const hostname = "localhost";
 
-  consola.log(chalk.greenBright(`\n  T3-env-client 1.0.0`));
+  consola.log(chalk.greenBright(`\n  T3-env-client ${version}`));
   consola.log(`  Started at:    http://${hostname}:${port}\n`);
-  consola.info(`📁 Scanning directory: ${path.resolve(relativePathDir)}`);
+  // consola.info(`📁 Scanning env variables in ${path.resolve(relativePathDir)}`);
 
   // Store the project directory globally for Next.js pages to access
   global.__PROJECT_DIR__ = path.resolve(relativePathDir);
@@ -36,23 +37,22 @@ export async function startServer({
   // Get current file directory in ESM
   const currentFileUrl = import.meta.url;
   const currentFileDir = path.dirname(fileURLToPath(currentFileUrl));
-
-  // Find the Next.js app directory - look for the directory containing src/app
-  let nextJsAppDir = currentFileDir;
   
-  // Keep going up until we find a directory with src/app
-  while (nextJsAppDir !== path.dirname(nextJsAppDir)) {
-    const potentialAppDir = path.join(nextJsAppDir, "src", "app");
-    if (fs.existsSync(potentialAppDir)) {
+  
+  consola.log('currentFileUrl : ' + currentFileUrl)
+  consola.log('currentFileDir : ' + currentFileDir)
+
+  // Find the package root (directory containing package.json)
+  let packageRoot = currentFileDir;
+  while (packageRoot !== path.dirname(packageRoot)) {
+    if (fs.existsSync(path.join(packageRoot, "package.json"))) {
       break;
     }
-    nextJsAppDir = path.dirname(nextJsAppDir);
+    packageRoot = path.dirname(packageRoot);
   }
-  
-  // If we still haven't found it, try going up from current directory
-  if (!fs.existsSync(path.join(nextJsAppDir, "src", "app"))) {
-    nextJsAppDir = path.resolve(currentFileDir, "..", "..");
-  }
+
+  // The Next.js app should be in the package root (where .next directory is built)
+  const nextJsAppDir = packageRoot;
 
   if (verbose) {
     consola.info(`Starting Next.js app from: ${nextJsAppDir}`);
@@ -60,6 +60,10 @@ export async function startServer({
       `Scanning for environment files in: ${path.resolve(relativePathDir)}`
     );
   }
+
+  consola.log('nextJsAppDir : ' + nextJsAppDir)
+  consola.log('dev : ' + dev)
+  consola.log('hostname : ' + hostname)
 
   const app = next({
     dev,

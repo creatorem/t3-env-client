@@ -7,6 +7,8 @@ import { getEnvVariables } from "../lib/env-variables";
 import { getEnvsSchema } from "../lib/envs-schema";
 import type { Variables } from "../lib/types";
 
+export const dynamic = "force-dynamic";
+
 async function getServerSideData(): Promise<Variables> {
   try {
     // Get the project directory from global variable set by the server
