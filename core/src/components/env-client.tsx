@@ -9,8 +9,18 @@ import { Filters } from "@/components/filters";
 import { FiltersProvider } from "@/components/filters/context";
 import { Variables } from "@/components/variables";
 import { VariablesProvider } from "@/components/variables/context";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { Variables as VariablesType } from "@/lib/types";
+import { Status } from "@/lib/types";
 import { useCallback } from "react";
+import { Search, RotateCcw, Check, X } from "lucide-react";
 
 type EnvClientProps = {
   readonly variables: VariablesType;
@@ -160,7 +170,7 @@ const CodePreview = () => {
       </h2>
 
       <div className="sticky top-0 max-h-screen overflow-auto py-4">
-        <div className="bg-muted/20 overflow-hidden rounded-xl border">
+        <div className="bg-muted/50 overflow-hidden rounded-xl border">
           <CodeEditor
             lineClassName="hover:bg-muted rounded-md"
             code={envFileContent}
@@ -172,9 +182,11 @@ const CodePreview = () => {
   );
 };
 
-// Environment selector section component
-const EnvironmentSelectorSection = () => {
+// Combined environment selector and filters component
+const EnvironmentSelectorAndFilters = () => {
   const { environment, updateVariables } = useEnvironment();
+  const { query, setQuery, status, setStatus } = useFilters();
+  const { variables, issues } = useVariables();
 
   const handleEnvironmentChange = (
     newEnvironment: any,
@@ -183,12 +195,89 @@ const EnvironmentSelectorSection = () => {
     updateVariables(newVariables);
   };
 
+  const allCount = Object.keys(variables).length;
+  const validCount = Object.keys(variables).filter(
+    (key) => !issues.some((issue) => issue.path?.includes(key))
+  ).length;
+  const invalidCount = allCount - validCount;
+
+  const handleStatusChange = (value: string) => {
+    switch (value) {
+      case "all":
+        setStatus(Status.ALL);
+        break;
+      case "valid":
+        setStatus(Status.VALID);
+        break;
+      case "invalid":
+        setStatus(Status.INVALID);
+        break;
+    }
+  };
+
+  const getStatusValue = () => {
+    switch (status) {
+      case Status.ALL:
+        return "all";
+      case Status.VALID:
+        return "valid";
+      case Status.INVALID:
+        return "invalid";
+      default:
+        return "all";
+    }
+  };
+
   return (
-    <div className="rounded-lg border bg-white p-4">
-      <EnvironmentSelector
-        currentEnvironment={environment}
-        onEnvironmentChange={handleEnvironmentChange}
-      />
+    <div className="bg-background rounded-lg border p-4">
+      <div className="space-y-4">
+        {/* Filters Row */}
+        <div className="flex flex-row items-center gap-4">
+          <EnvironmentSelector
+            currentEnvironment={environment}
+            onEnvironmentChange={handleEnvironmentChange}
+          />
+
+          {/* Status Filter Select */}
+          <Select value={getStatusValue()} onValueChange={handleStatusChange}>
+            <SelectTrigger className="w-48">
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">
+                <div className="flex items-center gap-2">
+                  <RotateCcw className="h-3 w-3" />
+                  All ({allCount})
+                </div>
+              </SelectItem>
+              <SelectItem value="valid">
+                <div className="flex items-center gap-2">
+                  <Check className="h-3 w-3 text-green-600" />
+                  Valid ({validCount})
+                </div>
+              </SelectItem>
+              <SelectItem value="invalid">
+                <div className="flex items-center gap-2">
+                  <X className="h-3 w-3 text-red-600" />
+                  Invalid ({invalidCount})
+                </div>
+              </SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Search Input */}
+          <div className="relative flex-1">
+            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <Input
+              type="text"
+              placeholder="Search environment variables..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
@@ -197,7 +286,7 @@ export const Client = ({ variables }: EnvClientProps) => {
   const { query, status } = useFilters();
   const { variables: envVariables } = useEnvironment();
   const currentVariables = getCurrentVariables(envVariables, variables);
-  
+
   return (
     <VariablesProvider
       variables={currentVariables}
@@ -205,9 +294,8 @@ export const Client = ({ variables }: EnvClientProps) => {
       statusFilter={status}
     >
       <div className="mx-auto max-w-7xl space-y-6">
-        <EnvironmentSelectorSection />
-        <Filters />
-  
+        <EnvironmentSelectorAndFilters />
+
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           <Variables />
           <CodePreview />

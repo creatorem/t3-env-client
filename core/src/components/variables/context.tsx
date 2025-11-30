@@ -125,6 +125,19 @@ export const VariablesProvider = ({
     );
   }, [filterByStatus, filterByQuery, searchQuery, statusFilter, variables]);
 
+  // Reset form when variables change (environment switch)
+  useEffect(() => {
+    isResettingRef.current = true;
+    const newValues = Object.fromEntries(
+      Object.entries(variables).map(([key, variable]) => [
+        key,
+        variable.value || "",
+      ])
+    );
+    form.reset(newValues);
+    isResettingRef.current = false;
+  }, [variables, form]);
+
   // Initial validation
   useEffect(() => {
     const currentValues = form.getValues();

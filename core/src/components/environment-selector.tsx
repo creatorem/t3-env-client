@@ -2,10 +2,14 @@
 
 import { useState, useTransition } from "react";
 import { Badge } from "./ui/badge";
-import { Button } from "./ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
 import { type Environment, reloadEnvironmentVariables } from "@/lib/actions";
-import { cn } from "@/lib/utils";
-import { RefreshCw, Settings } from "lucide-react";
 
 interface EnvironmentSelectorProps {
   currentEnvironment?: Environment;
@@ -37,80 +41,45 @@ export function EnvironmentSelector({
     });
   };
 
-  const handleReload = () => {
-    startTransition(async () => {
-      try {
-        const variables = await reloadEnvironmentVariables(environment);
-        onEnvironmentChange?.(environment, variables);
-      } catch (error) {
-        console.error("Failed to reload environment:", error);
-      }
-    });
+  const handleSelectChange = (value: string) => {
+    handleEnvironmentChange(value as Environment);
   };
 
   return (
     <div className="flex items-center gap-3">
-      <div className="flex items-center gap-2">
-        <Settings className="text-muted-foreground size-4" />
-        <span className="text-muted-foreground text-sm font-medium">
-          Environment:
-        </span>
-      </div>
-
-      <div className="flex items-center gap-2">
-        <Button
-          variant={environment === "development" ? "default" : "outline"}
-          size="sm"
-          onClick={() => handleEnvironmentChange("development")}
-          disabled={isReloading}
-          className={cn(
-            "relative",
-            environment === "development" && "ring-2 ring-blue-500/20"
-          )}
-        >
-          Development
-          {environment === "development" && (
-            <Badge
-              variant="secondary"
-              className="absolute -top-1 -right-1 size-2 border-none bg-green-500 p-0"
-            />
-          )}
-        </Button>
-
-        <Button
-          variant={environment === "production" ? "default" : "outline"}
-          size="sm"
-          onClick={() => handleEnvironmentChange("production")}
-          disabled={isReloading}
-          className={cn(
-            "relative",
-            environment === "production" && "ring-2 ring-red-500/20"
-          )}
-        >
-          Production
-          {environment === "production" && (
-            <Badge
-              variant="secondary"
-              className="absolute -top-1 -right-1 size-2 border-none bg-red-500 p-0"
-            />
-          )}
-        </Button>
-      </div>
-
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={handleReload}
+      <Select
+        value={environment}
+        onValueChange={handleSelectChange}
         disabled={isReloading}
-        className="gap-2"
       >
-        <RefreshCw className={cn("size-4", isReloading && "animate-spin")} />
-        Reload
-      </Button>
-
-      <div className="text-muted-foreground text-xs">
-        {isReloading ? "Loading..." : `Using ${environment} environment`}
-      </div>
+        <SelectTrigger className="w-40">
+          <SelectValue placeholder="Select environment" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="development">
+            <div className="flex items-center gap-2">
+              Development
+              {environment === "development" && (
+                <Badge
+                  variant="secondary"
+                  className="size-2 border-none bg-green-500 p-0"
+                />
+              )}
+            </div>
+          </SelectItem>
+          <SelectItem value="production">
+            <div className="flex items-center gap-2">
+              Production
+              {environment === "production" && (
+                <Badge
+                  variant="secondary"
+                  className="size-2 border-none bg-red-500 p-0"
+                />
+              )}
+            </div>
+          </SelectItem>
+        </SelectContent>
+      </Select>
     </div>
   );
 }
