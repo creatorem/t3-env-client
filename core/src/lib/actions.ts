@@ -1,6 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { writeFileSync } from "fs";
+import { join } from "path";
 import { getEnvConfigData } from "./env-data";
 import { getEnvVariablesData } from "./env-variables";
 import { getEnvsSchema } from "./envs-schema";
@@ -98,4 +100,40 @@ export async function getServerSideDataWithEnvironment(
   environment: Environment = "development"
 ): Promise<Variables> {
   return reloadEnvironmentVariables(environment);
+}
+
+export async function writeEnvFile(content: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    // Get the project directory from global variable set by the server
+    const projectDir = global.__PROJECT_DIR__;
+    if (!projectDir) {
+      throw new Error("Project directory not available");
+    }
+
+    // Get the env client config to check write permissions and file path
+    const envConfigData = await getEnvConfigData(projectDir);
+    
+    const writePermission = envConfigData.envClientConfig?.parsed?.writePermission;
+    
+    if (!writePermission) {
+      throw new Error("Write permission is disabled in env-client.config.ts");
+    }
+
+    const envFilePath = envConfigData.envClientConfig?.parsed?.envFilePath || '.env.local';
+    const fullPath = join(projectDir, envFilePath);
+
+    // Write the content to the specified env file
+    writeFileSync(fullPath, content, 'utf8');
+
+    // Revalidate the path to refresh the page with updated data
+    revalidatePath("/");
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to write env file:", error);
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : "Unknown error occurred" 
+    };
+  }
 }

@@ -19,8 +19,10 @@ import {
 } from "@/components/ui/select";
 import type { Variables as VariablesType } from "@/lib/types";
 import { Status } from "@/lib/types";
-import { useCallback } from "react";
-import { Search, RotateCcw, Check, X } from "lucide-react";
+import { useCallback, useState } from "react";
+import { Search, RotateCcw, Check, X, Save } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { writeEnvFile } from "@/lib/actions";
 
 type EnvClientProps = {
   readonly variables: VariablesType;
@@ -186,13 +188,36 @@ const CodePreview = () => {
 const EnvironmentSelectorAndFilters = () => {
   const { environment, updateVariables } = useEnvironment();
   const { query, setQuery, status, setStatus } = useFilters();
-  const { variables, issues } = useVariables();
+  const { variables, issues, form } = useVariables();
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const handleEnvironmentChange = (
     newEnvironment: any,
     newVariables: VariablesType
   ) => {
     updateVariables(newVariables);
+  };
+
+  const handleUpdateEnvFile = async () => {
+    setIsUpdating(true);
+    try {
+      const formValues = form.getValues();
+      const envFileContent = generateEnvFileContent(formValues);
+      
+      const result = await writeEnvFile(envFileContent);
+      
+      if (result.success) {
+        console.log('Successfully updated .env.local');
+        // Could add a toast notification here
+      } else {
+        console.error('Failed to update .env file:', result.error);
+        // Could show error notification here
+      }
+    } catch (error) {
+      console.error('Failed to update .env file:', error);
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   const allCount = Object.keys(variables).length;
@@ -276,6 +301,18 @@ const EnvironmentSelectorAndFilters = () => {
               className="pl-10"
             />
           </div>
+
+          {/* Update Button */}
+          <Button
+            onClick={handleUpdateEnvFile}
+            variant="default"
+            size="sm"
+            className="gap-2"
+            disabled={isUpdating}
+          >
+            <Save className="h-4 w-4" />
+            {isUpdating ? "Updating..." : "Update .env"}
+          </Button>
         </div>
       </div>
     </div>

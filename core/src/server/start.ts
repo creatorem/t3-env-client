@@ -83,28 +83,6 @@ export async function startServer({
       try {
         const parsedUrl = parse(req.url!, true);
 
-        // if (parsedUrl.pathname === "/api/env") {
-        //   // Get both config and variables data
-        //   const envConfigData = await getEnvConfigData(relativePathDir);
-        //   const envVariablesData = await getEnvVariablesData(relativePathDir);
-
-        //   // Combine for backward compatibility (if needed by any external consumers)
-        //   const combinedData = {
-        //     envConfigData,
-        //     envVariablesData,
-        //     // Legacy format for backward compatibility
-        //     projectPath: envConfigData.projectPath,
-        //     envClientConfig: envConfigData.envClientConfig,
-        //     files: envVariablesData.files,
-        //     variables: envVariablesData.variables,
-        //     processEnv: envVariablesData.processEnv,
-        //   };
-
-        //   res.writeHead(200, { "Content-Type": "application/json" });
-        //   res.end(JSON.stringify(combinedData));
-        //   return;
-        // }
-
         await handle(req, res, parsedUrl);
       } catch (err) {
         consola.error("Error occurred handling", req.url, err);

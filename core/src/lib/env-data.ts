@@ -68,16 +68,34 @@ export async function getEnvConfigData(
         parsed: null,
       };
 
-      // Parse the config file as text to extract envsPath
+      // Parse the config file as text to extract all properties
       try {
         const tsContent = envConfigData.envClientConfig.content;
         if (tsContent) {
+          const parsed: any = {};
+          
+          // Extract envsPath
           const envsPathMatch = tsContent.match(/envsPath:\s*['"](.*?)['"]/);
           if (envsPathMatch) {
-            const envsPath = envsPathMatch[1];
-            envConfigData.envClientConfig.envsPath = envsPath;
-            envConfigData.envClientConfig.parsed = { envsPath };
-          } else {
+            parsed.envsPath = envsPathMatch[1];
+            envConfigData.envClientConfig.envsPath = envsPathMatch[1];
+          }
+          
+          // Extract writePermission
+          const writePermissionMatch = tsContent.match(/writePermission:\s*(true|false)/);
+          if (writePermissionMatch) {
+            parsed.writePermission = writePermissionMatch[1] === 'true';
+          }
+          
+          // Extract envFilePath
+          const envFilePathMatch = tsContent.match(/envFilePath:\s*['"](.*?)['"]/);
+          if (envFilePathMatch) {
+            parsed.envFilePath = envFilePathMatch[1];
+          }
+          
+          envConfigData.envClientConfig.parsed = parsed;
+          
+          if (!envsPathMatch) {
             envConfigData.envClientConfig.parseError =
               "Could not find envsPath in configuration";
           }
