@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { type Environment, reloadEnvironmentVariables } from "@/lib/actions";
+import { type Environment, reloadEnvironmentVariables } from "@/actions/actions";
 
 interface EnvironmentSelectorProps {
   currentEnvironment?: Environment;

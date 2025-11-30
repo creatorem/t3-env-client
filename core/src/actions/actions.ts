@@ -3,10 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { writeFileSync } from "fs";
 import { join } from "path";
-import { getEnvConfigData } from "./env-data";
-import { getEnvVariablesData } from "./env-variables";
+import { Variables } from "@/lib/types";
+import { getEnvConfigData } from "@/lib/env-data";
+import { getEnvVariablesData } from "@/lib/env-variables";
 import { getEnvsSchema } from "./envs-schema";
-import type { Variables } from "./types";
 
 export type Environment = "development" | "production";
 

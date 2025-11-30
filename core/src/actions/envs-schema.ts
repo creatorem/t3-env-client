@@ -1,7 +1,7 @@
 "use server";
 
-import type { EnvConfigData } from "./env-data";
-import { deduceEnvsPath } from "./envs-handler";
+import { EnvConfigData } from "@/lib/env-data";
+import { deduceEnvsPath } from "@/lib/envs-handler";
 import fs from "node:fs";
 import path from "node:path";
 import vm from "node:vm";

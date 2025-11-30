@@ -1,14 +1,13 @@
 "use client";
 
-import { useFilters } from "./filters/context";
-import { useVariables } from "./variables/context";
 import { CodeEditor } from "@/components/code-editor";
 import { EnvironmentSelector } from "@/components/environment-selector";
 import { useEnvironment } from "@/components/environment/context";
-import { Filters } from "@/components/filters";
-import { FiltersProvider } from "@/components/filters/context";
 import { Variables } from "@/components/variables";
-import { VariablesProvider } from "@/components/variables/context";
+import {
+  useVariables,
+  VariablesProvider,
+} from "@/components/variables/context";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -22,7 +21,8 @@ import { Status } from "@/lib/types";
 import { useCallback, useState } from "react";
 import { Search, RotateCcw, Check, X, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { writeEnvFile } from "@/lib/actions";
+import { useFilters } from "@/components/filters/context";
+import { writeEnvFile } from "@/actions/actions";
 
 type EnvClientProps = {
   readonly variables: VariablesType;
@@ -203,18 +203,18 @@ const EnvironmentSelectorAndFilters = () => {
     try {
       const formValues = form.getValues();
       const envFileContent = generateEnvFileContent(formValues);
-      
+
       const result = await writeEnvFile(envFileContent);
-      
+
       if (result.success) {
-        console.log('Successfully updated .env.local');
+        console.log("Successfully updated .env.local");
         // Could add a toast notification here
       } else {
-        console.error('Failed to update .env file:', result.error);
+        console.error("Failed to update .env file:", result.error);
         // Could show error notification here
       }
     } catch (error) {
-      console.error('Failed to update .env file:', error);
+      console.error("Failed to update .env file:", error);
     } finally {
       setIsUpdating(false);
     }

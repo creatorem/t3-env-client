@@ -1,6 +1,6 @@
 "use server";
 
-import { getEnvConfigData } from "./env-data";
+import { getEnvConfigData } from "@/lib/env-data";
 import { getEnvsSchema } from "./envs-schema";
 
 type Issue = {

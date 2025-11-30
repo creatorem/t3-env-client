@@ -9,7 +9,7 @@ import {
   useState,
 } from "react";
 import type { Issue, Status, Variables } from "@/lib/types";
-import { validate } from "@/lib/validate";
+import { validate } from "@/actions/validate";
 import { type UseFormReturn, useForm } from "react-hook-form";
 
 export const VariablesContext = createContext<VariablesContextType>({

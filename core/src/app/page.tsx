@@ -1,11 +1,11 @@
 import { FiltersProvider } from "@/components/filters/context";
-import { Client } from "../components/env-client";
+import { Client } from "./page.client";
 import { EnvironmentProvider } from "../components/environment/context";
-import type { Environment } from "../lib/actions";
 import { getEnvConfigData } from "../lib/env-data";
 import { getEnvVariables } from "../lib/env-variables";
-import { getEnvsSchema } from "../lib/envs-schema";
 import type { Variables } from "../lib/types";
+import { getEnvsSchema } from "@/actions/envs-schema";
+import { Environment } from "@/actions/actions";
 
 export const dynamic = "force-dynamic";
 
