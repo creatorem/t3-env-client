@@ -10,6 +10,7 @@ import { FiltersProvider } from "@/components/filters/context";
 import { Variables } from "@/components/variables";
 import { VariablesProvider } from "@/components/variables/context";
 import type { Variables as VariablesType } from "@/lib/types";
+import { useCallback } from "react";
 
 type EnvClientProps = {
   readonly variables: VariablesType;
@@ -119,26 +120,6 @@ function addGroupedVariablesToLines(
   });
 }
 
-// Helper function to scroll to and focus a form field
-function scrollToFormField(variableName: string) {
-  const fieldElement = document.querySelector(
-    `[data-field-name="${variableName}"]`
-  );
-
-  if (!fieldElement) return;
-
-  fieldElement.scrollIntoView({
-    behavior: "smooth",
-    block: "center",
-  });
-
-  // Focus the input field if it exists
-  const inputElement = fieldElement.querySelector("input");
-  if (inputElement) {
-    inputElement.focus();
-  }
-}
-
 // Helper function to determine current variables to use
 function getCurrentVariables(
   envVariables: VariablesType,
@@ -161,19 +142,19 @@ function generateEnvFileContent(formValues: Record<string, string>): string {
   return lines.join("\n");
 }
 
-// Handle click events on environment variables in the code editor
-function handleVariableClick(variableName: string): void {
-  scrollToFormField(variableName);
-}
-
-// Code preview component that displays the generated .env file
 const CodePreview = () => {
-  const { form } = useVariables();
+  const { form, variables } = useVariables();
   const envFileContent = generateEnvFileContent(form.getValues());
+
+  const handleVariableClick = useCallback((code: string) => {
+    const variableName = Object.keys(variables).find((value) =>
+      code.includes(value)
+    );
+    window.location.href = `#${variableName}`;
+  }, []);
 
   return (
     <div className="relative flex flex-col justify-start">
-
       <h2 className="text-md text-foreground absolute top-3 -translate-y-full font-semibold">
         File
       </h2>
@@ -181,8 +162,9 @@ const CodePreview = () => {
       <div className="sticky top-0 max-h-screen overflow-auto py-4">
         <div className="bg-muted/20 overflow-hidden rounded-xl border">
           <CodeEditor
+            lineClassName="hover:bg-muted rounded-md"
             code={envFileContent}
-            onVariableClick={handleVariableClick}
+            onLineClick={handleVariableClick}
           />
         </div>
       </div>
@@ -227,7 +209,7 @@ const EnvClientContent = ({ variables }: { variables: VariablesType }) => {
         <EnvironmentSelectorSection />
         <Filters />
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           <Variables />
           <CodePreview />
         </div>

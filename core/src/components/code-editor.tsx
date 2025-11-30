@@ -31,19 +31,17 @@ const CodeWithHighlighting: React.FC<{
   codeText: string;
   wrapperClassNames: Record<string, string>;
   textSize: "sm" | "md";
-  topLineNumber: number;
-  disableScroll: boolean;
   strongLineClassName?: string;
   lineClassName?: string;
+  onLineClick?: (code: string) => void;
 }> = ({
   strongLineNumbers,
   codeText,
   wrapperClassNames,
   textSize,
-  topLineNumber,
-  disableScroll,
   strongLineClassName,
   lineClassName,
+  onLineClick,
 }) => {
   // Split code into lines for proper rendering
   // const codeLines = codeText.split('\n').slice(disableScroll ? topLineNumber - 1 : 0);
@@ -178,10 +176,11 @@ const CodeWithHighlighting: React.FC<{
           "transition-text transition-background flex items-center justify-start !rounded-l-none delay-200 duration-500",
           TEXT_SIZE_MAP[textSize].lineHeight,
           lineClassName,
+          onLineClick ? 'cursor-pointer' : '',
           strongLineNumbers.includes(lineIndex + 1) ? "group/strong-line" : "",
           strongLineNumbers.includes(lineIndex + 1) ? strongLineClassName : ""
-          // Removed isUnsetEnvVar coloring here since it's now handled per-part
         )}
+        onClick={() => onLineClick(parts.map((p) => p.content).join(""))}
         data-strong={strongLineNumbers.includes(lineIndex + 1)}
         data-unset={isUnsetEnvVar}
         style={{
@@ -227,6 +226,7 @@ export interface CodeEditorProps {
   lineClassName?: string;
   className?: string;
   showCopyButton?: boolean;
+  onLineClick?: (code: string) => void;
 }
 
 const TEXT_SIZE_MAP = {
@@ -260,7 +260,7 @@ export function CodeEditor({
   lineClassName,
   className,
   showCopyButton = true,
-  onVariableClick,
+  onLineClick,
 }: CodeEditorProps) {
   const lines = code.split("\n");
   const lineCount = lines.length;
@@ -308,7 +308,7 @@ export function CodeEditor({
   const codeBox = (
     <div
       className={cn(
-        "overflow-hidden py-2 pr-2 pl-0 font-mono",
+        "overflow-auto py-2 pr-2 pl-0 font-mono",
         TEXT_SIZE_MAP[textSize].size
       )}
       style={{
@@ -323,11 +323,9 @@ export function CodeEditor({
           wrapperClassNames={wrapperClassNames}
           strongLineNumbers={strongLineNumbers}
           textSize={textSize}
-          topLineNumber={topLineNumber}
-          disableScroll={disableScroll}
           strongLineClassName={strongLineClassName}
           lineClassName={lineClassName}
-          onVariableClick={onVariableClick}
+          onLineClick={onLineClick}
         />
       ) : (
         <div
@@ -378,20 +376,15 @@ export function CodeEditor({
     </div>
   );
 
-  const codeWrapperClassNameStyle =
-    "rounded-xl border bg-white transition-all dark:bg-surface";
-
   return (
-    <div className={cn("p-1 pt-0", className)}>
-      <div className="relative size-full">
-        {showCopyButton && (
-          <div className="absolute top-2 right-2 z-10">
-            <CopyButton toCopy={code} />
-          </div>
-        )}
+    <div className={cn("relative", className)}>
+      {showCopyButton && (
+        <div className="absolute top-2 right-2 z-10">
+          <CopyButton toCopy={code} />
+        </div>
+      )}
 
-        {content}
-      </div>
+      {content}
     </div>
   );
 }

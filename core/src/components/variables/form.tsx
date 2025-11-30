@@ -118,13 +118,22 @@ export const Form = () => {
 
           {/* Grouped variables */}
           {hasGroups && (
-            <Accordion type="multiple" className="w-full">
+            <Accordion type="multiple" className="w-full" defaultValue={Object.keys(groups)}>
               {Object.entries(groups).map(([prefix, keys]) => (
-                <AccordionItem key={prefix} value={prefix} className="border-t border-b-0">
-                  <AccordionTrigger className="capitalize px-4">
-                    {prefix.toLowerCase()} ({keys.length} variables)
+                <AccordionItem
+                  key={prefix}
+                  value={prefix}
+                  className="border-t border-b-0"
+                >
+                  <AccordionTrigger className="px-4 cursor-pointer">
+                    <div className="sticky top-0">
+                      <span className="capitalize">{prefix.toLowerCase()}</span>
+                      <span className="ml-2 text-muted-foreground text-xs">
+                        {keys.length} variables
+                      </span>
+                    </div>
                   </AccordionTrigger>
-                  <AccordionContent>
+                  <AccordionContent className="pb-0">
                     <div>
                       {keys.map((key) => {
                         const variable = variables[key];
@@ -150,28 +159,6 @@ export const Form = () => {
   );
 };
 
-const AccessBadge = ({ group }: { group?: "client" | "server" | "shared" }) => {
-  if (["client", "shared"].includes(group || "")) {
-    return (
-      <Badge variant="secondary" className="gap-1">
-        <ShieldOff className="size-3" />
-        Client
-      </Badge>
-    );
-  }
-
-  if (group === "server") {
-    return (
-      <Badge variant="secondary" className="gap-1">
-        <Lock className="size-3" />
-        Server
-      </Badge>
-    );
-  }
-
-  return null;
-};
-
 const ValueInput = ({
   variable,
   field,
@@ -183,18 +170,18 @@ const ValueInput = ({
     <div className="flex flex-col">
       <div className="flex items-center gap-2">
         {variable.group === "server" && (
-          <Badge variant="secondary" className="size-9 gap-1">
+          <div className="h-9 w-9 min-w-9 flex items-center justify-center rounded-md bg-background border">
             <ServerIcon className="size-4" />
-          </Badge>
+          </div>
         )}
         <FormControl>
           <Input
             placeholder={`Set a value for ${variable.key}`}
-            className="font-mono"
+            className="font-mono shadow-none bg-background"
             {...field}
           />
         </FormControl>
-        <CopyButton toCopy={field.value} />
+        {/* <CopyButton className="h-9 w-9 min-w-9" toCopy={field.value} /> */}
       </div>
     </div>
   );
@@ -210,40 +197,39 @@ const Variable = ({
   const { issue } = useVariable(variable.key);
 
   return (
-    <FormField
-      key={variable.key}
-      control={control}
-      name={variable.key}
-      render={({ field, fieldState }) => (
-        <FormItem
-          // className="border-b px-4 py-6"
-          className="space-y-1 px-4 py-3"
-          data-field-name={variable.key}
-        >
-          <div className="space-y-1">
-            <div className="flex justify-start gap-2">
-              <FormLabel className="font-mono font-semibold">
-                {variable.key}
-              </FormLabel>
-
-              <div className="text-muted-foreground text-xs">
-                {variable.group}
+    // <div className="p-2 first:pt-4">
+    <span data-slot="variable" id={variable.key} className="block px-2 py-1 first-of-type:pt-2 last-of-type:pb-2 ">
+      <FormField
+        key={variable.key}
+        control={control}
+        name={variable.key}
+        render={({ field, fieldState }) => (
+          <FormItem
+            className="space-y-1 rounded-lg border p-3 bg-muted/50"
+            data-field-name={variable.key}
+          >
+            <div className="space-y-1">
+              <div className="flex justify-start gap-2">
+                <FormLabel className="font-mono font-semibold">
+                  {variable.key}
+                </FormLabel>
+  
+                <div className="text-muted-foreground text-xs">
+                  {variable.group}
+                </div>
               </div>
+              {variable.description && (
+                <FormDescription>{variable.description}</FormDescription>
+              )}
             </div>
-            {variable.description && (
-              <FormDescription>{variable.description}</FormDescription>
-            )}
-          </div>
-          <ValueInput variable={variable} field={field} />
-
-          <FormMessage />
-
-          {/* <div className="mt-2 flex gap-2">
-            <AccessBadge group={variable.group} />
-          </div> */}
-        </FormItem>
-      )}
-    />
+            <ValueInput variable={variable} field={field} />
+  
+            <FormMessage />
+  
+          </FormItem>
+        )}
+      />
+    </span>
   );
 };
 

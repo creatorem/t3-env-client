@@ -76,6 +76,7 @@ async function getServerSideData(): Promise<Variables> {
         }
       });
     }
+    console.log( {envConfigData} )
 
     return variables;
   } catch (error) {

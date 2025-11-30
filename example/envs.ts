@@ -29,3 +29,4 @@ export const envs = createEnv({
         runtimeEnv: process.env as any,
         emptyStringAsUndefined: true,
     });
+    // EXPO_PUBLIC

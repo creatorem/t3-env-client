@@ -8,7 +8,7 @@ export const Variables = () => {
       <h2 className="absolute top-3 -translate-y-full text-md font-semibold text-foreground">
         Variables
       </h2>
-      <div className="rounded-lg border">
+      <div className="rounded-xl border">
         <Form />
       </div>
     </div>
