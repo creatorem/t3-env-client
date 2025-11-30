@@ -39,31 +39,39 @@ import type {
 // Group variables by common prefixes, excluding common suffixes
 const groupVariablesByPrefix = (keys: string[]) => {
   const commonSuffixes = ["KEY", "SECRET", "TOKEN", "URL", "API", "ID"];
+  const publicPrefixes = ["NEXT_PUBLIC_", "EXPO_PUBLIC_"];
   const groups: Record<string, string[]> = {};
   const ungrouped: string[] = [];
 
   // First pass: identify potential prefixes
   const prefixCounts: Record<string, string[]> = {};
 
-  keys.forEach((key) => {
+  const extractPrefix = (key: string): string => {
     const parts = key.split("_");
-    if (parts.length > 1) {
-      let prefix = parts[0];
+    if (parts.length <= 1) return parts[0] || "";
 
-      // Handle NEXT_PUBLIC_ prefix - look at the next part for actual grouping
-      if (prefix === "NEXT" && parts.length > 2 && parts[1] === "PUBLIC") {
-        prefix = parts[2]; // Use the part after NEXT_PUBLIC_ for grouping
-      }
+    let prefix = parts[0];
 
-      // Skip if prefix is a common suffix
-      if (!commonSuffixes.includes(prefix)) {
-        if (!prefixCounts[prefix]) {
-          prefixCounts[prefix] = [];
-        }
-        prefixCounts[prefix].push(key);
-      } else {
-        ungrouped.push(key);
+    // Handle public prefixes - look at the part after the public prefix for actual grouping
+    for (const publicPrefix of publicPrefixes) {
+      if (key.startsWith(publicPrefix)) {
+        const remainingParts = key.slice(publicPrefix.length).split("_");
+        return remainingParts[0] || prefix;
       }
+    }
+
+    return prefix;
+  };
+
+  keys.forEach((key) => {
+    const prefix = extractPrefix(key);
+
+    // Skip if prefix is a common suffix or empty
+    if (!commonSuffixes.includes(prefix) && prefix) {
+      if (!prefixCounts[prefix]) {
+        prefixCounts[prefix] = [];
+      }
+      prefixCounts[prefix].push(key);
     } else {
       ungrouped.push(key);
     }

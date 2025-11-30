@@ -1,4 +1,5 @@
-import { createEnv } from '@t3-oss/env-nextjs';
+// import { createEnv } from '@t3-oss/env-nextjs';
+import { createEnv } from '@t3-oss/env-core';
 import { z } from 'zod';
 
 export const envs = createEnv({
@@ -26,7 +27,7 @@ export const envs = createEnv({
             GITHUB_APP_PRIVATE_KEY: z.string().min(1),
             GITHUB_MODIFIED_TIME_TOKEN: z.string().optional(),
         },
+        'clientPrefix': 'MY_TEST_PUBLIC',
         runtimeEnv: process.env as any,
         emptyStringAsUndefined: true,
     });
-    // EXPO_PUBLIC
