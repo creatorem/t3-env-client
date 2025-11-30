@@ -1,6 +1,6 @@
 {
   "name": "t3-env-client",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "engines": {
     "node": ">=v21"
   },
@@ -10,14 +10,6 @@
   },
   "license": "MIT",
   "type": "module",
-  "files": [
-    "dist",
-    ".next",
-    "next.config.ts",
-    "LICENSE",
-    "package.json",
-    "README.md"
-  ],
   "bin": {
     "t3-env-client": "./dist/cli/index.js"
   },
