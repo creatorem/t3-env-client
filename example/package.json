@@ -1,6 +1,6 @@
 {
   "name": "t3-env-client/example",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "engines": {
     "node": ">=v21"
   },
