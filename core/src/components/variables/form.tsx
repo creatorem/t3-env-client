@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from "react";
-import { CopyButton } from "../copy-button";
 import { useVariable, useVariables } from "./context";
 import {
   Accordion,
@@ -9,8 +7,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   FormControl,
   FormDescription,
@@ -21,15 +17,8 @@ import {
   Form as Root,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import type { EnvVariable, Issue } from "@/lib/types";
-import {
-  AlertCircle,
-  Check,
-  Copy,
-  Lock,
-  ServerIcon,
-  ShieldOff,
-} from "lucide-react";
+import type { EnvVariable } from "@/lib/types";
+import { ServerIcon } from "lucide-react";
 import type {
   Control,
   ControllerRenderProps,
@@ -126,17 +115,21 @@ export const Form = () => {
 
           {/* Grouped variables */}
           {hasGroups && (
-            <Accordion type="multiple" className="w-full" defaultValue={Object.keys(groups)}>
+            <Accordion
+              type="multiple"
+              className="w-full"
+              defaultValue={Object.keys(groups)}
+            >
               {Object.entries(groups).map(([prefix, keys]) => (
                 <AccordionItem
                   key={prefix}
                   value={prefix}
                   className="border-t border-b-0"
                 >
-                  <AccordionTrigger className="px-4 cursor-pointer">
+                  <AccordionTrigger className="cursor-pointer px-4">
                     <div className="sticky top-0">
                       <span className="capitalize">{prefix.toLowerCase()}</span>
-                      <span className="ml-2 text-muted-foreground text-xs">
+                      <span className="text-muted-foreground ml-2 text-xs">
                         {keys.length} variables
                       </span>
                     </div>
@@ -178,14 +171,14 @@ const ValueInput = ({
     <div className="flex flex-col">
       <div className="flex items-center gap-2">
         {variable.group === "server" && (
-          <div className="h-9 w-9 min-w-9 flex items-center justify-center rounded-md bg-background border">
+          <div className="bg-background flex h-9 w-9 min-w-9 items-center justify-center rounded-md border">
             <ServerIcon className="size-4" />
           </div>
         )}
         <FormControl>
           <Input
             placeholder={`Set a value for ${variable.key}`}
-            className="font-mono shadow-none bg-background"
+            className="bg-background font-mono shadow-none"
             {...field}
           />
         </FormControl>
@@ -206,14 +199,18 @@ const Variable = ({
 
   return (
     // <div className="p-2 first:pt-4">
-    <span data-slot="variable" id={variable.key} className="block px-2 py-1 first-of-type:pt-2 last-of-type:pb-2 ">
+    <span
+      data-slot="variable"
+      id={variable.key}
+      className="block px-2 py-1 first-of-type:pt-2 last-of-type:pb-2"
+    >
       <FormField
         key={variable.key}
         control={control}
         name={variable.key}
         render={({ field, fieldState }) => (
           <FormItem
-            className="space-y-1 rounded-lg border p-3 bg-muted/50"
+            className="bg-muted/50 space-y-1 rounded-lg border p-3"
             data-field-name={variable.key}
           >
             <div className="space-y-1">
@@ -221,7 +218,7 @@ const Variable = ({
                 <FormLabel className="font-mono font-semibold">
                   {variable.key}
                 </FormLabel>
-  
+
                 <div className="text-muted-foreground text-xs">
                   {variable.group}
                 </div>
@@ -231,9 +228,8 @@ const Variable = ({
               )}
             </div>
             <ValueInput variable={variable} field={field} />
-  
+
             <FormMessage />
-  
           </FormItem>
         )}
       />
