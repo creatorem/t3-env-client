@@ -24,19 +24,20 @@ export async function startServer({
   port,
   verbose,
 }: StartServerOptions) {
-  const dev = process.env.NODE_ENV !== "production";
+  // Get current file directory in ESM
+  const currentFileUrl = import.meta.url;
+  const currentFileDir = path.dirname(fileURLToPath(currentFileUrl));
+  
+  // Check if running from node_modules (production) or source directory (development)
+  const isInstalledPackage = currentFileDir.includes('node_modules');
+  const dev = !isInstalledPackage && process.env.NODE_ENV !== "production";
   const hostname = "localhost";
 
   consola.log(chalk.greenBright(`\n  T3-env-client ${version}`));
   consola.log(`  Started at:    http://${hostname}:${port}\n`);
-  // consola.info(`📁 Scanning env variables in ${path.resolve(relativePathDir)}`);
 
   // Store the project directory globally for Next.js pages to access
   global.__PROJECT_DIR__ = path.resolve(relativePathDir);
-
-  // Get current file directory in ESM
-  const currentFileUrl = import.meta.url;
-  const currentFileDir = path.dirname(fileURLToPath(currentFileUrl));
   
   
   consola.log('dev : ' + dev)
